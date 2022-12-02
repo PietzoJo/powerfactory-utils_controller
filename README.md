@@ -21,7 +21,7 @@ The following functionalities are provided:
   * topology case
   * steadystate case
 * [intended in future release] import from external grid data into the PowerFactory environment
-* [intended in future release] basic control of PowerFactory
+* [in work] basic control of PowerFactory
 
 ## <div id="tutorials" /> Tutorials
 
