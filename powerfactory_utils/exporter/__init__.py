@@ -1,5 +1,5 @@
-from powerfactory_utils.exporter.exporter import PowerfactoryExporter
-from powerfactory_utils.exporter.exporter import export_powerfactory_data
+from powerfactory_utils.export.exporter import PowerfactoryExporter
+from powerfactory_utils.export.exporter import export_powerfactory_data
 
 __all__ = [
     "PowerfactoryExporter",

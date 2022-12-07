@@ -42,3 +42,5 @@ Further, two different scenarios are available:
 
 [link_to_example_grids]: ./grids
 [link_to_interface]: ../powerfactory_utils/interface.py
+
+## Example for Usage of Controller
