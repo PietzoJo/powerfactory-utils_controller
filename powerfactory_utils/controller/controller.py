@@ -1,3 +1,4 @@
+# this is a comment --> why is there a failure symbol TODO
 import pathlib
 from dataclasses import dataclass
 from powerfactory_utils.interface import PowerfactoryInterface
@@ -13,7 +14,7 @@ class PowerfactoryController:
     grid_name: str
     powerfactory_user_profile: str = ""
     powerfactory_path: pathlib.Path = POWERFACTORY_PATH
-    powerfactory_version: str = powerfactory_version
+    powerfactory_version: str = POWERFACTORY_VERSION
 
     def __post_init__(self) -> None:
         self.pfi = PowerfactoryInterface(
@@ -22,5 +23,9 @@ class PowerfactoryController:
             powerfactory_path=self.powerfactory_path,
             powerfactory_version=self.powerfactory_version)
 
+    test = "some Words."
+    print(test)
 
-#this is a new line, that ends the file
+    def get_all_generators(self) -> list:
+        gen_lst = self.pfi.app.GetCalcRelevantObjects('*.ElmGenstat')
+        return gen_lst
