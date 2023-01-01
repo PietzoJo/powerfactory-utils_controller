@@ -29,3 +29,14 @@ class PowerfactoryController:
     def get_all_generators(self) -> list:
         gen_lst = self.pfi.app.GetCalcRelevantObjects('*.ElmGenstat')
         return gen_lst
+
+    def get_generator_attr(self, gen) -> dict:
+        attributes = {"name" : gen.loc_name,
+        "outserv" : gen.outserv,
+        "load_fl_mode" : gen.mode_inp,
+        "power" : gen.pgini,
+        "cos_phi" : gen.cosgini,
+        "cos_attr" : gen.pf_recap}
+        return attributes
+
+
