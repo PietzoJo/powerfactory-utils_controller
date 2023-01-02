@@ -23,20 +23,21 @@ class PowerfactoryController:
             powerfactory_path=self.powerfactory_path,
             powerfactory_version=self.powerfactory_version)
 
-    test = "some Words."
-    print(test)
-
-    def get_all_generators(self) -> list:
-        gen_lst = self.pfi.app.GetCalcRelevantObjects('*.ElmGenstat')
+    def get_all_generators(self, category: str='') -> list:
+        #gen_lst = self.pfi.app.GetCalcRelevantObjects('*.ElmGenstat') #TODO: kann eigentlich weg
+        gen_lst = self.pfi.generators(grid=self.grid_name)
+        if not category == '':
+            gen_lst=[gen for gen in gen_lst if gen.cCategory==category]
         return gen_lst
 
-    def get_generator_attr(self, gen) -> dict:
+    def get_generator_attr(self, gen) -> dict: #TODO gibt es hier noch eine unspezifischere Lösung?
         attributes = {"name" : gen.loc_name,
         "outserv" : gen.outserv,
         "load_fl_mode" : gen.mode_inp,
         "power" : gen.pgini,
         "cos_phi" : gen.cosgini,
-        "cos_attr" : gen.pf_recap}
+        "cos_attr" : gen.pf_recap,
+        "cCategory" : gen.cCategory}
         return attributes
 
 
