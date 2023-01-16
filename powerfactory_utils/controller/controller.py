@@ -1,4 +1,3 @@
-# this is a comment --> why is there a failure symbol TODO
 import pathlib
 from dataclasses import dataclass
 from powerfactory_utils.interface import PowerfactoryInterface
@@ -40,4 +39,33 @@ class PowerfactoryController:
         "cCategory" : gen.cCategory}
         return attributes
 
+    #TODO func create_generator()
+    def create_generator(self, name) -> bool: #TODO später Interface-function
+        # characteristics of a generator
+        #PowerFactory function CreateObject --> creates new target object
+        child=self.pfi.grid_data.GetContents(name+'.'+'ElmGenstat')
+        print(child)
+        a=self.pfi.grid_data.CreateObject('ElmGenstat', name)
+        print(a)
+        b=self.pfi.grid(self.grid_name).CreateObject('ElmGenstat', name)
+        print(b)
+        """
+        DataObject DataObject.CreateObject(str className,
+                                            [int|str objectNamePart0,]
+                                            [...]
+                                            )
+        ARGUMENTS
+        className
+        The class name of the object to create.
 
+        objectNameParts (optional)
+        Parts of the name of the object to create (without classname) which will be concatenated
+        to the object name.
+        """
+        return True #TODO: is only a filler so far
+
+
+
+    #TODO func replace_gen_template() #stays as an PowerfactoryController function
+    # --> What kind of generators --> what could be filter or characteristic element 
+    # use create_generator()-->use create_gen_name
