@@ -4,19 +4,25 @@ import importlib.util
 import itertools
 import pathlib
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass 
 from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from powerfactory_utils import powerfactory_types as pft
+#TODO: ausOriginalrepository eingefügt------------------------------------------------------------------
+#from powerfactory_utils.constants import BaseUnits
 
 if TYPE_CHECKING:
+    from typing import Any
     from typing import Iterable
+    from typing import Literal
     from typing import Optional
     from typing import TypeVar
-
     T = TypeVar("T")
+
+from powerfactory_utils import powerfactory_types as pft
+#TODO-------------------------------------------------------------------------------------------------------
+    
 
 POWERFACTORY_PATH = pathlib.Path("C:/Program Files/DIgSILENT")
 POWERFACTORY_VERSION = "2022 SP2"
@@ -106,6 +112,37 @@ class PowerfactoryInterface:
     def activate_grid(self, grid: pft.Grid) -> bool:
         exit_code = grid.Activate()
         return not exit_code
+
+    def create_object( #TODO:neueingeügtausOriginal-Repository
+        self,
+        name: str,
+        class_name: str,
+        location: pft.DataDir,
+        data: dict[str, Any],
+        force: bool = False,
+        update: bool = True,
+    ) -> Optional[pft.DataObject]:
+        element = self.element_of(location, filter=f"{name}.{class_name}")
+        if element is not None and force is False:
+            if update is False:
+                logger.warning(
+                    f"{name}.{class_name} already exists. Use force=True to create it anyway or update=True to update it."
+                )
+        else:
+            element = location.CreateObject(class_name, name)
+            update = True
+
+        if element is not None and update is True:
+            element = self.update_object(element, data)
+
+        return element
+
+    @staticmethod #TODO:neueingeügtausOriginal-Repository
+    def update_object(element: pft.DataObject, data: dict[str, Any]) -> pft.DataObject:#TODO:neueingeügtausOriginal-Repository
+        for k, v in data.items():
+            if getattr(element, k, None) is not None:
+                setattr(element, k, v)
+        return element
 
     def deactivate_grid(self, grid: pft.Grid) -> bool:
         exit_code = grid.Deactivate()

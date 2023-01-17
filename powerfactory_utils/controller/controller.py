@@ -41,28 +41,14 @@ class PowerfactoryController:
 
     #TODO func create_generator()
     def create_generator(self, name) -> bool: #TODO später Interface-function
-        # characteristics of a generator
+        #characteristics of a generator
         #PowerFactory function CreateObject --> creates new target object
-        child=self.pfi.grid_data.GetContents(name+'.'+'ElmGenstat')
-        print(child)
-        a=self.pfi.grid_data.CreateObject('ElmGenstat', name)
-        print(a)
-        b=self.pfi.grid(self.grid_name).CreateObject('ElmGenstat', name)
-        print(b)
-        """
-        DataObject DataObject.CreateObject(str className,
-                                            [int|str objectNamePart0,]
-                                            [...]
-                                            )
-        ARGUMENTS
-        className
-        The class name of the object to create.
+        
+        loc = self.pfi.grid(self.grid_name)
+        dat = {"pgini" : 56}
+        element=self.pfi.create_object(name=name, class_name='ElmGenstat',location=loc,data=dat)
 
-        objectNameParts (optional)
-        Parts of the name of the object to create (without classname) which will be concatenated
-        to the object name.
-        """
-        return True #TODO: is only a filler so far
+        return element 
 
 
 
