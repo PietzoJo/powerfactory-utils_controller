@@ -44,9 +44,12 @@ class PowerfactoryController:
         #characteristics of a generator
         #PowerFactory function CreateObject --> creates new target object
         
+        bus = self.pfi.app.GetCalcRelevantObjects('Feld_12.StaCubic')
+        print(bus)
         loc = self.pfi.grid(self.grid_name)
-        dat = {"pgini" : 56}
+        dat = {"pgini" : 56, "bus1" : bus[0]}#, 'bus1_bar' : 'Node4'}
         element=self.pfi.create_object(name=name, class_name='ElmGenstat',location=loc,data=dat)
+        #element.bus1 = bus[0]
 
         return element 
 
