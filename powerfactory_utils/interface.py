@@ -137,15 +137,10 @@ class PowerfactoryInterface:
 
         return element
 
-    @staticmethod #TODO:neueingeügtausOriginal-Repository
-    def update_object(element: pft.DataObject, data: dict[str, Any]) -> pft.DataObject:#TODO:neueingeügtausOriginal-Repository
+    @staticmethod #TODO:neu eingefügt aus Original-Repository
+    def update_object(element: pft.DataObject, data: dict[str, Any]) -> pft.DataObject:#TODO:neu eingefügt aus Original-Repository
         for k, v in data.items():
-            variable =element.HasAttribute(k) #TODO: löschen
-            if variable is None:
-                print("seems to be none")
-            else:
-                print("Attr is not none")
-            if element.HasAttribute(k) is not None:#if getattr(element, k, None) is not None:
+            if element.HasAttribute(k) is not None: #if getattr(element, k, None) is not None:
                 setattr(element, k, v)
         return element
 

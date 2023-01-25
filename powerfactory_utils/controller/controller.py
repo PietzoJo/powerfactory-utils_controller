@@ -41,17 +41,12 @@ class PowerfactoryController:
 
     #TODO func create_generator()
     def create_generator(self, name) -> bool: #TODO später Interface-function
-        #characteristics of a generator
-        #PowerFactory function CreateObject --> creates new target object
-        
-        bus = self.pfi.app.GetCalcRelevantObjects('Feld_12.StaCubic')
-        print(bus)
+        bus = self.pfi.app.GetCalcRelevantObjects('Feld_12.StaCubic')#TODO: create field automatically, in interfac.py
         loc = self.pfi.grid(self.grid_name)
-        dat = {"pgini" : 56, "bus1" : bus[0]}#, 'bus1_bar' : 'Node4'}
+        dat = {"pgini" : 56, "bus1" : bus[0]}
         element=self.pfi.create_object(name=name, class_name='ElmGenstat',location=loc,data=dat)
-        #element.bus1 = bus[0]
-
         return element 
+
 
 
 
