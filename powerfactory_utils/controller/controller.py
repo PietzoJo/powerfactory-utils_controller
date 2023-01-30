@@ -6,6 +6,7 @@ from powerfactory_utils.interface import PowerfactoryInterface
 POWERFACTORY_PATH = pathlib.Path("C:/Program Files/DIgSILENT")
 POWERFACTORY_VERSION = "2022 SP2"
 
+from powerfactory_utils import powerfactory_types as pft
 
 @dataclass
 class PowerfactoryController:
@@ -60,37 +61,57 @@ class PowerfactoryController:
 
 
 
-    def replace_gen_template(self, name: str, temp: str):
+    def replace_gen_template(self, generator: str, template: str):
+        copy_gen = self.pfi.app.GetCalcRelevantObjects(generator + '.ElmGenstat')
+        bus_con = copy_gen.bus1_bar
+        print(copy_gen)
         loc = self.pfi.grid(self.grid_name)
         vorlage = self.pfi.app.GetProjectFolder("templ")
-        template = vorlage.GetContents('WindFarm_direct.IntTemplate')
+        template = vorlage.GetContents(template + '.IntTemplate')
         if len(template) > 1:
             logger.warning("Found more then one element, returning only the first one.")
-        print(template)
         elements = template[0].GetContents()
         liste = []
+        new_field = pft.DataObject
         for ele in elements:
-            class_n = ele.GetClassName()
-            name = ele.loc_name + 'New'
+            name = ele.loc_name + generator
+            class_name = ele.GetClassName()
+            obj = self.element_of(loc, filter=f"{name}.{class_name}")
+            if obj is not None:
+                logger.warning(
+                    f"{name}.{class_name} already exists. "
+                )
             next = loc.AddCopy(ele, name)
+            if next.GetClassName() == "ElmGenstat":
+                print("Jetzt der Generator")
+                next.bus1=new_field
+                next.CopyData(copy_gen)
+                copy_gen.outserve = 1
             liste.append(next)
         _=[print(el.loc_name) for el in liste]
         bus_Feld2=self.pfi.app.GetCalcRelevantObjects('Feld_2.StaCubic')
         bus_Feld1=self.pfi.app.GetCalcRelevantObjects('Feld_1.StaCubic')
         print(bus_Feld2)
         print(bus_Feld1)
-
+        #ATTENTION: TODO BUG,becausetemplate does not store connecting bus1 information
+        #after bug fix, thispart can be deleted
         for new_one in liste:
-            if new_one.loc_name == 'Line_WFNew':
-                new_one.bus2 = self.pfi.app.GetCalcRelevantObjects('Feld_12.StaCubic')[0]
+            if new_one.loc_name == 'Line_WF'+ generator:
+                new_field=self.pfi.create_object(name='field_ext_'+generator, class_name='StaCubic', location=loc, data={'cterm' : bus_con})
+                print(new_field)
+                new_one.bus2 = new_field
                 new_one.bus1 = bus_Feld2[9]
-            if new_one.loc_name == 'Line_WTGNew':
+            if new_one.loc_name == 'Line_WTGNew' + generator:
                 new_one.bus1 = bus_Feld2[10]
                 new_one.bus2 = bus_Feld1[9]
-            if new_one.loc_name == 'WTGNew':
+            if new_one.loc_name == 'WTGNew' + generator:
                 new_one.bus1 = bus_Feld1[10]
-        #run_layout()
         return liste
+    
+        #run_layout()
+        #TODO: StationController anpassen
+        #TODO: CopyData() von Generator
+        
 
     #TODO func replace_gen_template() #stays as an PowerfactoryController function
     # --> What kind of generators --> what could be filter or characteristic element 
