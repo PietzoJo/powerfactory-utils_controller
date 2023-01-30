@@ -72,8 +72,24 @@ class PowerfactoryController:
         for ele in elements:
             class_n = ele.GetClassName()
             name = ele.loc_name + 'New'
-            next = loc.CreateObject(class_n, name)
+            next = loc.AddCopy(ele, name)
             liste.append(next)
+        _=[print(el.loc_name) for el in liste]
+        bus_Feld2=self.pfi.app.GetCalcRelevantObjects('Feld_2.StaCubic')
+        bus_Feld1=self.pfi.app.GetCalcRelevantObjects('Feld_1.StaCubic')
+        print(bus_Feld2)
+        print(bus_Feld1)
+
+        for new_one in liste:
+            if new_one.loc_name == 'Line_WFNew':
+                new_one.bus2 = self.pfi.app.GetCalcRelevantObjects('Feld_12.StaCubic')[0]
+                new_one.bus1 = bus_Feld2[9]
+            if new_one.loc_name == 'Line_WTGNew':
+                new_one.bus1 = bus_Feld2[10]
+                new_one.bus2 = bus_Feld1[9]
+            if new_one.loc_name == 'WTGNew':
+                new_one.bus1 = bus_Feld1[10]
+        #run_layout()
         return liste
 
     #TODO func replace_gen_template() #stays as an PowerfactoryController function
