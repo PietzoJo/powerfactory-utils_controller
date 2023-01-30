@@ -60,13 +60,21 @@ class PowerfactoryController:
 
 
 
-    def replace_gen_template(self, name: str):
+    def replace_gen_template(self, name: str, temp: str):
         loc = self.pfi.grid(self.grid_name)
         vorlage = self.pfi.app.GetProjectFolder("templ")
-        template = vorlage.GetContents()[0]
+        template = vorlage.GetContents('WindFarm_direct.IntTemplate')
+        if len(template) > 1:
+            logger.warning("Found more then one element, returning only the first one.")
         print(template)
-        elements = template.GetContents()
-        return elements
+        elements = template[0].GetContents()
+        liste = []
+        for ele in elements:
+            class_n = ele.GetClassName()
+            name = ele.loc_name + 'New'
+            next = loc.CreateObject(class_n, name)
+            liste.append(next)
+        return liste
 
     #TODO func replace_gen_template() #stays as an PowerfactoryController function
     # --> What kind of generators --> what could be filter or characteristic element 
