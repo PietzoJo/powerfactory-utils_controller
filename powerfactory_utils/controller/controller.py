@@ -1,12 +1,11 @@
 import pathlib
 from dataclasses import dataclass
 from powerfactory_utils.interface import PowerfactoryInterface
-
+from powerfactory_utils import powerfactory_types as pft
+from loguru import logger
 
 POWERFACTORY_PATH = pathlib.Path("C:/Program Files/DIgSILENT")
 POWERFACTORY_VERSION = "2022 SP2"
-
-from powerfactory_utils import powerfactory_types as pft
 
 @dataclass
 class PowerfactoryController:
@@ -48,23 +47,24 @@ class PowerfactoryController:
         loc = self.pfi.grid(self.grid_name)
         dat = {"pgini" : 56, "bus1" : bus[0]}
         element=self.pfi.create_object(name=name, class_name='ElmGenstat',location=loc,data=dat)
-
-        print(ldf)
         return element 
 
     def run_layout(self):
         layout = self.pfi.app.GetFromStudyCase(
             "ComSgllayout")
-        layout.nodeDispersion = 2
+        layout.iAction = 0
+        layout.nodeDispersion = 1
         layout.orthoType = 1
-        layout.Execute()
-
-
+        try:
+            layout.Execute()
+        except:
+            print('ComSgllayout failed.')
+        return True
 
     def replace_gen_template(self, generator: str, template: str):
-        copy_gen = self.pfi.app.GetCalcRelevantObjects(generator + '.ElmGenstat')
-        bus_con = copy_gen.bus1_bar
-        print(copy_gen)
+        copy_gen = self.pfi.app.GetCalcRelevantObjects(generator + '.ElmGenstat')[0]
+        bus_con = copy_gen.bus1.cterm
+        bus_cubic = bus_con.GetContents('*.StaCubic')[0]
         loc = self.pfi.grid(self.grid_name)
         vorlage = self.pfi.app.GetProjectFolder("templ")
         template = vorlage.GetContents(template + '.IntTemplate')
@@ -76,36 +76,51 @@ class PowerfactoryController:
         for ele in elements:
             name = ele.loc_name + generator
             class_name = ele.GetClassName()
-            obj = self.element_of(loc, filter=f"{name}.{class_name}")
+            obj = self.pfi.element_of(loc, filter=f"{name}.{class_name}")
             if obj is not None:
                 logger.warning(
                     f"{name}.{class_name} already exists. "
                 )
-            next = loc.AddCopy(ele, name)
-            if next.GetClassName() == "ElmGenstat":
-                print("Jetzt der Generator")
-                next.bus1=new_field
-                next.CopyData(copy_gen)
-                copy_gen.outserve = 1
-            liste.append(next)
+            else:
+                next = loc.AddCopy(ele, name)
+                if next.GetClassName() == "ElmGenstat":
+                    next.CopyData(copy_gen)
+                    copy_gen.outserv = 1
+                liste.append(next)
         _=[print(el.loc_name) for el in liste]
-        bus_Feld2=self.pfi.app.GetCalcRelevantObjects('Feld_2.StaCubic')
-        bus_Feld1=self.pfi.app.GetCalcRelevantObjects('Feld_1.StaCubic')
-        print(bus_Feld2)
-        print(bus_Feld1)
-        #ATTENTION: TODO BUG,becausetemplate does not store connecting bus1 information
-        #after bug fix, thispart can be deleted
+        bus_field2=self.pfi.app.GetCalcRelevantObjects('Feld_2.StaCubic')
+        bus_f2=[field for field in bus_field2 if generator in str(field)]
+        bus_field1=self.pfi.app.GetCalcRelevantObjects('Feld_1.StaCubic')
+        bus_f1=[field for field in bus_field1 if generator in str(field)]
+        #ATTENTION: TODO BUG,because template does not store connecting bus1 information
+        #after bug fix, this part can be deleted
         for new_one in liste:
             if new_one.loc_name == 'Line_WF'+ generator:
-                new_field=self.pfi.create_object(name='field_ext_'+generator, class_name='StaCubic', location=loc, data={'cterm' : bus_con})
-                print(new_field)
+                #new_field=self.pfi.create_object(name='field_ext_'+generator, class_name='StaCubic', location=loc, data={'cterm' : bus_con})
+                new_field=bus_con.AddCopy(bus_cubic, 'field_ext_'+generator)
                 new_one.bus2 = new_field
-                new_one.bus1 = bus_Feld2[9]
-            if new_one.loc_name == 'Line_WTGNew' + generator:
-                new_one.bus1 = bus_Feld2[10]
-                new_one.bus2 = bus_Feld1[9]
-            if new_one.loc_name == 'WTGNew' + generator:
-                new_one.bus1 = bus_Feld1[10]
+                for field in bus_f2:
+                    if 'PCC_WTG' in str(field):
+                        feld2=field
+                        new_one.bus1 = feld2
+                        continue
+            if new_one.loc_name == 'Line_WTG' + generator:
+                for field in bus_f2:
+                    if 'Node_WTG' in str(field):
+                        feld2=field
+                        new_one.bus1 = feld2
+                        continue
+                for field in bus_f1:
+                    if 'PCC_WTG' in str(field):
+                        feld1=field
+                        new_one.bus2 = feld1
+                        continue
+            if new_one.loc_name == 'WTG' + generator:
+                for field in bus_f1:
+                    if 'Node_WTG' in str(field):
+                        feld1=field
+                        new_one.bus1 = feld1
+                        continue
         return liste
     
         #run_layout()
