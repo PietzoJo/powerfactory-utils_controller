@@ -80,6 +80,8 @@ class PowerfactoryController:
         elements = template[0].GetContents()
         liste = []
         new_field = pft.DataObject
+        station_control = pft.DataObject
+        new_gen = pft.DataObject
         for ele in elements:
             name = ele.loc_name + generator
             class_name = ele.GetClassName()
@@ -93,7 +95,17 @@ class PowerfactoryController:
                 if next.GetClassName() == "ElmGenstat":
                     next.CopyData(copy_gen) #copys all attributesoforiginal generator, but attributes that exists only intemplate will be overwriten
                     copy_gen.outserv = 1
+                    new_gen = next
+                if next.GetClassName() == "ElmStactrl":
+                    station_control = next
                 liste.append(next)
+        # set up station controller
+        new_gen.av_mode = 'qvchar'
+        new_gen.c_pstac = station_control
+        ref_nod = self.pfi.app.GetCalcRelevantObjects('PCC_WTG' + generator + '.ElmTerm')[0]
+        station_control.refbar = ref_nod
+        station_control.p_cub = ref_nod.GetContents('Feld_1.StaCubic')[0]
+        # print for user
         _=[print(el.loc_name) for el in liste]
         #ATTENTION: TODO BUG,because template does not store connecting bus1 information
         #############################################################################################################################################
